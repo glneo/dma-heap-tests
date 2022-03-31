@@ -19,8 +19,8 @@ target_include_directories(dma-heap-unit-tests
 )
 
 target_link_libraries(dma-heap-unit-tests
-	${GTEST_LIBRARY}
-	${GTEST_MAIN_LIBRARY}
+	${GTEST_LIBRARIES}
+	${GTEST_MAIN_LIBRARIES}
 	pthread
 )
 
