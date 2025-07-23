@@ -33,7 +33,7 @@
 //#define DUMB_BUFFERS
 //#define TEST_PHYS
 
-#if TEST_PHYS
+#ifdef TEST_PHYS
 #include <linux/remoteproc_cdev.h>
 #endif
 
@@ -136,7 +136,7 @@ static void dmabuf_sync(int fd, int start_stop)
 		printf("sync failed %d\n", errno);
 }
 
-#if TEST_PHYS
+#ifdef TEST_PHYS
 int get_phys_rproc(int fd, u_int64_t *phys)
 {
 	if (phys == NULL)
@@ -211,7 +211,7 @@ static uint32_t allocate_attach_fb(int dri_fd, uint width, uint height, char *he
 		exit(EXIT_FAILURE);
 	}
 
-#if TEST_PHYS
+#ifdef TEST_PHYS
 	u_int64_t phys;
 	ret = get_phys_rproc(dma_buf_fd, &phys);
 	if (ret < 0) {
