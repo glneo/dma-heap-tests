@@ -109,13 +109,14 @@ static int heap_alloc(int fd, size_t len, unsigned int flags, int* handle_fd)
 	if (handle_fd == NULL)
 		return -EINVAL;
 
-	struct dma_heap_allocation_data data = {
+	struct dma_heap_export_data data = {
+		.offset = 0x1000,
 		.len = len,
 		.fd_flags = O_CLOEXEC | O_RDWR,
 		.heap_flags = flags,
 	};
 
-	int ret = ioctl(fd, DMA_HEAP_IOCTL_ALLOC, &data);
+	int ret = ioctl(fd, DMA_HEAP_IOCTL_EXPORT, &data);
 	if (ret < 0)
 		return errno;
 
