@@ -291,27 +291,39 @@ int main(int argc, char* argv[])
 	res.connector_id_ptr = (uint64_t)(uintptr_t)res_conn_buf;
 	res.count_connectors = MAX_CONNECTORS;
 	ioctl(dri_fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
-	uint32_t connector_id = res_conn_buf[0];
 
-	printf("Total connectors: %d, Choosing connector: %d\n", res.count_connectors, connector_id);
-
-	// Get info about connector
 	struct drm_mode_get_connector conn = { 0 };
-	conn.connector_id = connector_id;
-
 	struct drm_mode_modeinfo conn_mode_buf[MAX_MODES] = { 0 };
-	conn.modes_ptr = (uint64_t)(uintptr_t)conn_mode_buf;
-	conn.count_modes = MAX_MODES;
-	ioctl(dri_fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn);
+	printf("Total connectors: %d\n", res.count_connectors);
+	size_t i;
+	for (i = 0; i < res.count_connectors; i++) {
+		uint32_t connector_id = res_conn_buf[i];
+		printf("Trying connector: %d: ", connector_id);
 
-	// Check if the connector is OK to use (connected to something)
-	if (conn.count_encoders < 1 || conn.count_modes < 1 || !conn.encoder_id || !conn.connection) {
-		printf("Not connected\n");
+		// Get info about connector
+		memset(&conn, 0, sizeof(conn));
+		conn.connector_id = connector_id;
+
+		memset(conn_mode_buf, 0, sizeof(conn_mode_buf));
+		conn.modes_ptr = (uint64_t)(uintptr_t)conn_mode_buf;
+		conn.count_modes = MAX_MODES;
+		ioctl(dri_fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn);
+
+		// Check if the connector is OK to use (connected to something)
+		if (conn.count_encoders < 1 || conn.count_modes < 1 || !conn.encoder_id || !conn.connection) {
+			printf("Not connected\n");
+			continue;
+		} else {
+			printf("Connected\n");
+			break;
+		}
+	}
+	if (i == res.count_connectors) {
+		printf("No valid connectors found\n");
 		return EXIT_FAILURE;
 	}
 
-	printf("Total mode count for connector %d: %d\n", connector_id, conn.count_modes);
-
+	printf("Total mode count for connector %d: %d\n", conn.connector_id, conn.count_modes);
 	printf("Using connector default mode: %dx%d\n", conn_mode_buf[0].hdisplay, conn_mode_buf[0].vdisplay);
 
 	// All the buffer handling
@@ -329,7 +341,7 @@ int main(int argc, char* argv[])
 
 	// Setup CRTC
 	crtc.fb_id = fb_id;
-	crtc.set_connectors_ptr = (uint64_t)(uintptr_t)&connector_id;
+	crtc.set_connectors_ptr = (uint64_t)(uintptr_t)&conn.connector_id;
 	crtc.count_connectors = 1;
 	crtc.mode = conn_mode_buf[0];
 	crtc.mode_valid = 1;
