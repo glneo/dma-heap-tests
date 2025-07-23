@@ -15,11 +15,11 @@
  */
 
 #include <cerrno>
+#include <fcntl.h>
 #include <dirent.h>
 #include <gtest/gtest.h>
 
 #include "heap_test_fixture.h"
-#include "heap_helper.h"
 
 #define HEAP_DIR "/dev/dma_heap"
 
@@ -43,7 +43,7 @@ void HeapAllHeapsTest::SetUp()
 
 			struct Heap heap;
 			heap.dev_name = (std::string)HEAP_DIR + "/" + entry->d_name;
-			heap.fd = heap_open(heap.dev_name.c_str());
+			heap.fd = open(heap.dev_name.c_str(), O_RDONLY | O_CLOEXEC);
 			if (heap.fd < 0)
 				continue;
 			m_allHeaps.push_back(heap);

@@ -31,24 +31,6 @@
 
 __BEGIN_DECLS
 
-static int heap_open(const char *heap_path)
-{
-	int fd = open(heap_path, O_RDONLY | O_CLOEXEC);
-	if (fd < 0)
-		return -errno;
-
-	return fd;
-}
-
-static int heap_close(int fd)
-{
-	int ret = close(fd);
-	if (ret < 0)
-		return -errno;
-
-	return 0;
-}
-
 static int heap_alloc(int fd, size_t len, unsigned int flags, int* handle_fd)
 {
 	if (handle_fd == NULL)
